@@ -1,0 +1,95 @@
+package xyz.malkki.microservicetest.testexecution
+
+import org.junit.jupiter.api.DynamicTest
+import org.testcontainers.containers.GenericContainer
+import xyz.malkki.microservicetest.domain.Microservice
+import xyz.malkki.microservicetest.domain.TestStep
+import xyz.malkki.microservicetest.domain.TestSuite
+import xyz.malkki.microservicetest.testdefinition.MicroserviceConfigParser
+import xyz.malkki.microservicetest.testdefinition.TestStepParser
+import xyz.malkki.microservicetest.testdefinition.TestSuiteParser
+import java.nio.file.FileSystems
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+import kotlin.streams.toList
+
+object TestSuiteRunner {
+    private val microservices: Map<String, Microservice>
+    private val testSteps: Map<String, TestStep>
+    private val testSuites: Map<String, TestSuite>
+
+    init {
+        val microserviceConfigParser = MicroserviceConfigParser()
+        microservices = getFilesFromResourcesDir("microservices").flatMap {
+            Files.newInputStream(it).use { microserviceConfigParser.getServices(it) }
+        }.associateBy { it.id }
+
+        val testStepParser = TestStepParser()
+        testSteps = getFilesFromResourcesDir("steps").flatMap {
+            Files.newInputStream(it).use { testStepParser.getTestSteps(it) }
+        }.associateBy { it.id }
+
+        val testSuiteParser = TestSuiteParser()
+        testSuites = getFilesFromResourcesDir("testsuites").flatMap {
+            Files.newInputStream(it).use { testSuiteParser.getTestSuites(it) }
+        }.associateBy { it.id }
+    }
+
+    fun getTestSuites(): Collection<String> = testSuites.keys
+
+    fun generateDynamicTests(): Collection<DynamicTest> {
+        return testSuites.entries.map { (_, testSuite) -> DynamicTest.dynamicTest(testSuite.name) { runTestSuite(testSuite.id) } }
+    }
+
+    /**
+     * Runs a test suite with the specified id
+     */
+    fun runTestSuite(testSuiteId: String) {
+        if (!testSuites.containsKey(testSuiteId)) {
+            throw IllegalArgumentException("No test suite found with ID: $testSuiteId")
+        }
+
+        val testSuite = testSuites[testSuiteId]!!
+
+        val containers = mutableMapOf<String, GenericContainer<*>>()
+        for (microservice in testSuite.services) {
+            if (!microservices.containsKey(microservice)) {
+                throw IllegalArgumentException("No microservice found with ID: $microservice")
+            }
+
+            val container = microservices[microservice]!!.createContainer()
+            container.start()
+            containers[microservice] = container
+        }
+
+        val steps = testSuite.steps.map { if (testSteps.containsKey(it)) { testSteps[it]!! } else { throw IllegalArgumentException("No test step found with ID: $it") } }
+
+        val testStepExecutor = TestStepExecutor(containers)
+        testStepExecutor.executeSteps(steps)
+
+        for (container in containers.values) {
+            container.stop()
+        }
+    }
+
+    private fun getFilesFromResourcesDir(dirName: String): List<Path> {
+        val uri = TestSuiteRunner::class.java.classLoader.getResource(dirName)?.toURI()
+
+        if (uri == null) {
+            println("Resource directory \"$dirName\" does not exist")
+            return emptyList()
+        }
+
+        //TODO: test if this works inside a JAR file
+        val dirPath = if (uri.scheme == "jar") {
+            val filesystem = FileSystems.newFileSystem(uri, emptyMap<String, Any>())
+            filesystem.use { it.getPath(dirName) }
+        } else {
+            Paths.get(uri)
+        }
+
+        return Files.walk(dirPath, 1).toList().filterNot { it == dirPath }
+    }
+
+}
