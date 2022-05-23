@@ -1,0 +1,14 @@
+services:
+  - id: redis
+    container: redis
+    ports:
+      - 6379
+    environment:
+      TEST_ENV: "TEST_ENV_VALUE"
+  - id: pulsar
+    container: apachepulsar/pulsar
+    cmd: bin/pulsar standalone
+
+#Start up command?
+
+# Wait strategy?

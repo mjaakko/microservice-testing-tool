@@ -1,0 +1,9 @@
+steps:
+  - id: set-redis-value
+    class: xyz.malkki.microservicetest.steps.SetRedisValueStepCode
+    dependencies:
+      - redis
+  - id: get-redis-value
+    class: xyz.malkki.microservicetest.steps.GetRedisValueStepCode
+    dependencies:
+      - redis

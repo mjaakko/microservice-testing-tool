@@ -1,0 +1,8 @@
+test-suites:
+  - id: redis
+    name: Test Redis
+    dependencies:
+      - redis
+    steps:
+      - set-redis-value
+      - get-redis-value
