@@ -20,6 +20,8 @@ class MicroserviceConfigParser {
 
         val exposedPorts = serviceConfig["ports"]?.let { (it as List<Any>).mapNotNull { port -> port.toString().toIntOrNull() } }.orEmpty()
 
-        return Microservice(serviceConfig["id"]!!.toString(), serviceConfig["container"]!!.toString(), exposedPorts, serviceConfig["cmd"]?.toString())
+        val environment: Map<String, String> = serviceConfig["environment"]?.let { it as Map<String, String> } ?: emptyMap()
+
+        return Microservice(serviceConfig["id"]!!.toString(), serviceConfig["container"]!!.toString(), exposedPorts, serviceConfig["cmd"]?.toString(), environment)
     }
 }
