@@ -1,9 +1,11 @@
 steps:
   - id: set-redis-value
     class: xyz.malkki.microservicetest.steps.SetRedisValueStepCode
+    timeout: 10 #Seconds
     dependencies:
       - redis
   - id: get-redis-value
     class: xyz.malkki.microservicetest.steps.GetRedisValueStepCode
+    timeout: 10
     dependencies:
       - redis

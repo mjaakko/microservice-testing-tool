@@ -20,6 +20,6 @@ class TestStepParser {
 
         val dependencies = step["dependencies"]?.let { it as List<String> }.orEmpty().toSet()
 
-        return TestStep(step["id"]!!.toString(), step["class"]!!.toString(), dependencies)
+        return TestStep(step["id"]!!.toString(), step["class"]!!.toString(), dependencies, step["timeout"]?.toString()?.toIntOrNull())
     }
 }
