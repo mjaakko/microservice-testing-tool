@@ -22,6 +22,8 @@ class MicroserviceConfigParser {
 
         val environment: Map<String, String> = serviceConfig["environment"]?.let { it as Map<String, String> } ?: emptyMap()
 
-        return Microservice(serviceConfig["id"]!!.toString(), serviceConfig["container"]!!.toString(), exposedPorts, serviceConfig["cmd"]?.toString(), environment)
+        val dependencies = serviceConfig["dependencies"]?.let { it as List<String> }.orEmpty()
+
+        return Microservice(serviceConfig["id"]!!.toString(), serviceConfig["container"]!!.toString(), exposedPorts, serviceConfig["cmd"]?.toString(), environment, dependencies)
     }
 }

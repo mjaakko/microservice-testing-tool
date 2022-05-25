@@ -8,7 +8,7 @@ services:
   - id: pulsar
     container: apachepulsar/pulsar
     cmd: bin/pulsar standalone
-
-#Start up command?
+    dependencies:
+      - redis #Not an actual dependency, used just for testing
 
 # Wait strategy?

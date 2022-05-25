@@ -8,6 +8,7 @@ import xyz.malkki.microservicetest.domain.TestSuite
 import xyz.malkki.microservicetest.testdefinition.MicroserviceConfigParser
 import xyz.malkki.microservicetest.testdefinition.TestStepParser
 import xyz.malkki.microservicetest.testdefinition.TestSuiteParser
+import xyz.malkki.microservicetest.utils.DependencyGraph
 import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
@@ -53,7 +54,7 @@ object TestSuiteRunner {
         val testSuite = testSuites[testSuiteId]!!
 
         val containers = mutableMapOf<String, GenericContainer<*>>()
-        for (microservice in testSuite.services) {
+        for (microservice in getServicesInStartupOrder(testSuite)) {
             if (!microservices.containsKey(microservice)) {
                 throw IllegalArgumentException("No microservice found with ID: $microservice")
             }
@@ -71,6 +72,19 @@ object TestSuiteRunner {
         for (container in containers.values) {
             container.stop()
         }
+    }
+
+    /**
+     * Sorts the services with topological sort based on their dependencies so that each service is started after their dependencies
+     * @return Ordered list of service IDs
+     */
+    private fun getServicesInStartupOrder(testSuite: TestSuite): List<String> {
+        val microservicesFiltered = microservices.filter { (key, _) -> key in testSuite.services }
+        val microserviceDependencyGraphBuilder = DependencyGraph.Builder()
+
+        microservicesFiltered.values.forEach { microservice -> microserviceDependencyGraphBuilder.addDependencies(microservice.id, microservice.dependencies) }
+
+        return microserviceDependencyGraphBuilder.build().asSortedList()
     }
 
     private fun getFilesFromResourcesDir(dirName: String): List<Path> {
