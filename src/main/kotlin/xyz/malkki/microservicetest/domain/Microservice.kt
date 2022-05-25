@@ -5,6 +5,7 @@ import org.testcontainers.containers.GenericContainer
 data class Microservice(val id: String, val container: String, val ports: List<Int>, val cmd: String?, val environment: Map<String, String> = emptyMap()) {
     fun createContainer(): GenericContainer<*> {
         val container = GenericContainer(container)
+        container.networkAliases = listOf(id)
         container.exposedPorts = ports
         cmd?.let { container.setCommand(it) }
 
