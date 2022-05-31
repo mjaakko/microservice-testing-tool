@@ -2,6 +2,7 @@ package xyz.malkki.microservicetest.testexecution
 
 import org.junit.jupiter.api.DynamicTest
 import org.testcontainers.containers.GenericContainer
+import org.testcontainers.containers.Network
 import xyz.malkki.microservicetest.domain.Microservice
 import xyz.malkki.microservicetest.domain.TestStep
 import xyz.malkki.microservicetest.domain.TestSuite
@@ -53,6 +54,8 @@ object TestSuiteRunner {
 
         val testSuite = testSuites[testSuiteId]!!
 
+        val network = Network.newNetwork()
+
         val containers = mutableMapOf<String, GenericContainer<*>>()
         for (microservice in getServicesInStartupOrder(testSuite)) {
             if (!microservices.containsKey(microservice)) {
@@ -60,6 +63,7 @@ object TestSuiteRunner {
             }
 
             val container = microservices[microservice]!!.createContainer()
+            container.network = network
             container.start()
             containers[microservice] = container
         }
@@ -72,6 +76,8 @@ object TestSuiteRunner {
         for (container in containers.values) {
             container.stop()
         }
+
+        network.close()
     }
 
     /**
