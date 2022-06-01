@@ -10,6 +10,7 @@ import xyz.malkki.microservicetest.testdefinition.MicroserviceConfigParser
 import xyz.malkki.microservicetest.testdefinition.TestStepParser
 import xyz.malkki.microservicetest.testdefinition.TestSuiteParser
 import xyz.malkki.microservicetest.utils.DependencyGraph
+import xyz.malkki.microservicetest.utils.stopSafely
 import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
@@ -57,27 +58,33 @@ object TestSuiteRunner {
         val network = Network.newNetwork()
 
         val containers = mutableMapOf<String, GenericContainer<*>>()
-        for (microservice in getServicesInStartupOrder(testSuite)) {
-            if (!microservices.containsKey(microservice)) {
-                throw IllegalArgumentException("No microservice found with ID: $microservice")
+
+        try {
+            for (microservice in getServicesInStartupOrder(testSuite)) {
+                if (!microservices.containsKey(microservice)) {
+                    throw IllegalArgumentException("No microservice found with ID: $microservice")
+                }
+
+                val container = microservices[microservice]!!.createContainer()
+                container.network = network
+                container.start()
+                containers[microservice] = container
             }
 
-            val container = microservices[microservice]!!.createContainer()
-            container.network = network
-            container.start()
-            containers[microservice] = container
+            val steps = testSuite.steps.map { if (testSteps.containsKey(it)) { testSteps[it]!! } else { throw IllegalArgumentException("No test step found with ID: $it") } }
+
+            val testStepExecutor = TestStepExecutor(containers)
+            testStepExecutor.executeSteps(steps)
+        } catch (e: Exception) {
+            println("Failed to execute test suite ${testSuite.id}: ${e.message}")
+            throw e
+        } finally {
+            for (container in containers.values) {
+                container.stopSafely()
+            }
+
+            network.close()
         }
-
-        val steps = testSuite.steps.map { if (testSteps.containsKey(it)) { testSteps[it]!! } else { throw IllegalArgumentException("No test step found with ID: $it") } }
-
-        val testStepExecutor = TestStepExecutor(containers)
-        testStepExecutor.executeSteps(steps)
-
-        for (container in containers.values) {
-            container.stop()
-        }
-
-        network.close()
     }
 
     /**
