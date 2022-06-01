@@ -1,6 +1,7 @@
 package xyz.malkki.microservicetest.testexecution
 
 import org.junit.jupiter.api.DynamicTest
+import org.testcontainers.containers.ContainerLaunchException
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.Network
 import xyz.malkki.microservicetest.domain.Microservice
@@ -67,7 +68,12 @@ object TestSuiteRunner {
 
                 val container = microservices[microservice]!!.createContainer()
                 container.network = network
-                container.start()
+                try {
+                    container.start()
+                } catch (cle: ContainerLaunchException) {
+                    println("Failed to start container $microservice (${container.dockerImageName})")
+                    throw cle
+                }
                 containers[microservice] = container
             }
 
