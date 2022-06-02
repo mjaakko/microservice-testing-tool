@@ -32,6 +32,8 @@ dependencies {
     implementation "org.yaml:snakeyaml:1.30"
     implementation "org.jetbrains.kotlin:kotlin-reflect:1.6.21"
 
+    implementation 'io.github.microutils:kotlin-logging-jvm:2.1.21'
+
     implementation 'org.junit.jupiter:junit-jupiter:5.8.2'
     implementation 'org.testcontainers:testcontainers:1.17.1'
     implementation 'org.testcontainers:junit-jupiter:1.17.1'

@@ -1,5 +1,7 @@
 package xyz.malkki.microservicetest.testexecution
 
+import jdk.nashorn.internal.runtime.regexp.joni.Config.log
+import mu.KotlinLogging
 import org.junit.jupiter.api.DynamicTest
 import org.testcontainers.containers.ContainerLaunchException
 import org.testcontainers.containers.GenericContainer
@@ -18,6 +20,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.streams.toList
 
+private val logger = KotlinLogging.logger { }
 object TestSuiteRunner {
     private val microservices: Map<String, Microservice>
     private val testSteps: Map<String, TestStep>
@@ -71,7 +74,9 @@ object TestSuiteRunner {
                 try {
                     container.start()
                 } catch (cle: ContainerLaunchException) {
-                    println("Failed to start container $microservice (${container.dockerImageName})")
+                    logger.error(cle) {
+                        "Failed to start container $microservice (${container.dockerImageName}), latest logs from container:\n${container.logs}"
+                    }
                     throw cle
                 }
                 containers[microservice] = container
@@ -82,7 +87,7 @@ object TestSuiteRunner {
             val testStepExecutor = TestStepExecutor(containers)
             testStepExecutor.executeSteps(steps)
         } catch (e: Exception) {
-            println("Failed to execute test suite ${testSuite.id}: ${e.message}")
+            logger.error { "Failed to execute test suite ${testSuite.id}: ${e.message}" }
             throw e
         } finally {
             for (container in containers.values) {
@@ -110,7 +115,7 @@ object TestSuiteRunner {
         val uri = TestSuiteRunner::class.java.classLoader.getResource(dirName)?.toURI()
 
         if (uri == null) {
-            println("Resource directory \"$dirName\" does not exist")
+            logger.warn { "Resource directory \"$dirName\" does not exist" }
             return emptyList()
         }
 
