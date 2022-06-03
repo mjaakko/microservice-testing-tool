@@ -6,7 +6,7 @@ data class Microservice(val id: String,
                         val container: String,
                         val ports: List<Int>,
                         val cmd: String?,
-                        val environment: Map<String, String> = emptyMap(),
+                        val environment: Map<String, Any> = emptyMap(),
                         val dependencies: List<String> = emptyList()
 ) {
     fun createContainer(): GenericContainer<*> {
@@ -15,9 +15,7 @@ data class Microservice(val id: String,
         container.exposedPorts = ports
         cmd?.let { container.setCommand(it) }
 
-        for ((key, value) in environment) {
-            container.addEnv(key, value)
-        }
+        container.env = environment.map { (key, value) -> "$key=$value" }
 
         return container
     }
