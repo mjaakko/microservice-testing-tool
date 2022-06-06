@@ -1,6 +1,7 @@
 package xyz.malkki.microservicetest.testexecution
 
 import mu.KotlinLogging
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DynamicTest
 import org.testcontainers.containers.ContainerLaunchException
 import org.testcontainers.containers.GenericContainer
@@ -103,6 +104,11 @@ object TestSuiteRunner {
      */
     private fun getServicesInStartupOrder(testSuite: TestSuite): List<String> {
         val microservicesFiltered = microservices.filter { (key, _) -> key in testSuite.services }
+
+        for (service in testSuite.services) {
+            assertTrue(service in microservicesFiltered.keys, "Service $service was not found from test configuration")
+        }
+
         val microserviceDependencyGraphBuilder = DependencyGraph.Builder()
 
         microservicesFiltered.values.forEach { microservice -> microserviceDependencyGraphBuilder.addDependencies(microservice.id, microservice.dependencies) }
