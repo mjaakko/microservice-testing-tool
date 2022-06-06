@@ -1,6 +1,5 @@
 package xyz.malkki.microservicetest.testexecution
 
-import jdk.nashorn.internal.runtime.regexp.joni.Config.log
 import mu.KotlinLogging
 import org.junit.jupiter.api.DynamicTest
 import org.testcontainers.containers.ContainerLaunchException
