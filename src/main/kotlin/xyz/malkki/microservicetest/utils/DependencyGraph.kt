@@ -30,6 +30,10 @@ internal class DependencyGraph(private val dependencyMap: Map<String, List<Strin
         fun build(): DependencyGraph = DependencyGraph(dependencyMap)
     }
 
+    /**
+     * @return Dependencies in topological sort
+     * @throws CyclicDependenciesException when cycles are detected in dependencies
+     */
     fun asSortedList(): List<String> {
         val sorted = mutableListOf<String>()
 
@@ -46,6 +50,35 @@ internal class DependencyGraph(private val dependencyMap: Map<String, List<Strin
             }
         }
 
+        if (sorted.size != dependencyMap.keys.size) {
+            checkCycles()
+        }
+
         return sorted
     }
+
+    private fun checkCycles() {
+        fun findCycles(origin: String, path: List<String>, cycles: MutableList<List<String>>) {
+            val current = path.last()
+            val dependencies = dependencyMap[current] ?: emptyList()
+            for (dependency in dependencies) {
+                if (dependency == origin) {
+                    cycles.add(path + origin)
+                } else {
+                    findCycles(origin, path + dependency, cycles)
+                }
+            }
+        }
+
+        val cycles = dependencyMap.keys.flatMap { resource ->
+            val cycles = mutableListOf<List<String>>()
+            findCycles(resource, listOf(resource), cycles)
+            return@flatMap cycles.toList()
+        }.toSet()
+        if (cycles.isNotEmpty()) {
+            throw CyclicDependenciesException(cycles)
+        }
+    }
+
+    class CyclicDependenciesException(val cycles: Collection<List<String>>) : Exception("Cyclic dependencies in graph: ${cycles.joinToString(", ") { cycle -> cycle.joinToString(" -> ") }}")
 }
