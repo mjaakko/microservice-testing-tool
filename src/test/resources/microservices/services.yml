@@ -5,10 +5,14 @@ services:
       - 6379
     environment:
       TEST_ENV: "TEST_ENV_VALUE"
+    dependencies:
+      - pulsar #Just an example
   - id: pulsar
     container: apachepulsar/pulsar
+    startupTimeout: 90
+    waitStrategy:
+      type: PORT #PORT, LOG or HEALTHCHECK
+      logMessage: ".*messaging service is ready.*"
     cmd: bin/pulsar standalone
-    dependencies:
-      - redis #Not an actual dependency, used just for testing
-
-# Wait strategy?
+    ports:
+      - 6650
