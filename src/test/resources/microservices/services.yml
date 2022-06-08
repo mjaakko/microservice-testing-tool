@@ -5,8 +5,6 @@ services:
       - 6379
     environment:
       TEST_ENV: "TEST_ENV_VALUE"
-    dependencies:
-      - pulsar #Just an example
   - id: pulsar
     container: apachepulsar/pulsar
     startupTimeout: 90
@@ -16,3 +14,5 @@ services:
     cmd: bin/pulsar standalone
     ports:
       - 6650
+    dependencies:
+      - redis #Just an example
