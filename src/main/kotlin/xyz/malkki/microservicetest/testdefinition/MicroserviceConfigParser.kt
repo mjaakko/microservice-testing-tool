@@ -4,6 +4,7 @@ import checkKey
 import org.yaml.snakeyaml.Yaml
 import xyz.malkki.microservicetest.domain.Microservice
 import java.io.InputStream
+import java.time.Duration
 
 class MicroserviceConfigParser {
     private val yaml = Yaml()
@@ -20,10 +21,12 @@ class MicroserviceConfigParser {
 
         val exposedPorts = serviceConfig["ports"]?.let { (it as List<Any>).mapNotNull { port -> port.toString().toIntOrNull() } }.orEmpty()
 
+        val startupTimeout = serviceConfig["startupTimeout"]?.let { it as Int }?.let { Duration.ofSeconds(it.toLong()) }
+
         val environment: Map<String, Any> = serviceConfig["environment"]?.let { it as Map<String, Any> } ?: emptyMap()
 
         val dependencies = serviceConfig["dependencies"]?.let { it as List<String> }.orEmpty()
 
-        return Microservice(serviceConfig["id"]!!.toString(), serviceConfig["container"]!!.toString(), exposedPorts, serviceConfig["cmd"]?.toString(), environment, dependencies)
+        return Microservice(serviceConfig["id"]!!.toString(), serviceConfig["container"]!!.toString(), exposedPorts, serviceConfig["cmd"]?.toString(), startupTimeout, environment, dependencies)
     }
 }
