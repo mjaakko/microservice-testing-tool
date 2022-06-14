@@ -6,7 +6,7 @@ import redis.clients.jedis.Jedis
 import xyz.malkki.microservicetest.testexecution.TestStepCode
 
 class GetRedisValueStepCode : TestStepCode {
-    override fun execute(containers: Map<String, GenericContainer<*>>, state: MutableMap<String, Any>) {
+    override fun execute(containers: Map<String, GenericContainer<*>>, updateState: (key: String, updater: (Any?) -> Any) -> Unit, getState: (key: String) -> Any?) {
         val redis = containers["redis"]!!
 
         val jedis = Jedis(redis.host, redis.firstMappedPort)

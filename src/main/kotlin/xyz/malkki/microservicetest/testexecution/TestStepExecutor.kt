@@ -11,6 +11,10 @@ class TestStepExecutor(private val containers: Map<String, GenericContainer<*>>)
     fun executeSteps(steps: List<TestStep>) {
         val state = ConcurrentHashMap<String, Any>()
 
+        fun updateState(key: String, updater: (Any?) -> Any) {
+            state.compute(key) { _, value -> updater(value) }
+        }
+
         steps.forEach { step ->
             //TODO: check if class exists
             val clazz = Class.forName(step.className).kotlin
@@ -20,10 +24,10 @@ class TestStepExecutor(private val containers: Map<String, GenericContainer<*>>)
                 val dependencies = containers.filterKeys { step.dependencies.contains(it) }
 
                 if (step.timeout == null) {
-                    testStep.execute(dependencies, state)
+                    testStep.execute(dependencies, ::updateState, state::get)
                 } else {
                     assertTimeout(Duration.ofSeconds(step.timeout.toLong()), "Test step ${step.id} was not executed in ${step.timeout} seconds") {
-                        testStep.execute(dependencies, state)
+                        testStep.execute(dependencies, ::updateState, state::get)
                     }
                 }
             } else {
