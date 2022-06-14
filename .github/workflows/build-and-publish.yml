@@ -32,3 +32,8 @@ jobs:
         run: ./gradlew publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Delete old package versions
+        uses: actions/delete-package-versions@v3
+        with:
+          package-name: 'xyz.malkki.microservice-testing-tool'
+          min-versions-to-keep: 3
