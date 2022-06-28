@@ -35,6 +35,7 @@ dependencies {
     implementation 'io.github.microutils:kotlin-logging-jvm:2.1.23'
 
     implementation 'org.junit.jupiter:junit-jupiter:5.8.2'
+    implementation 'org.junit.platform:junit-platform-launcher:1.8.2'
     implementation 'org.testcontainers:testcontainers:1.17.2'
     implementation 'org.testcontainers:junit-jupiter:1.17.2'
 
