@@ -5,7 +5,7 @@ import org.yaml.snakeyaml.Yaml
 import xyz.malkki.microservicetest.domain.TestStep
 import java.io.InputStream
 
-class TestStepParser {
+internal class TestStepParser {
     private val yaml = Yaml()
 
     fun getTestSteps(inputStream: InputStream): List<TestStep> {

@@ -5,7 +5,7 @@ import org.yaml.snakeyaml.Yaml
 import xyz.malkki.microservicetest.domain.TestSuite
 import java.io.InputStream
 
-class TestSuiteParser {
+internal class TestSuiteParser {
     private val yaml = Yaml()
 
     fun getTestSuites(inputStream: InputStream): List<TestSuite> {

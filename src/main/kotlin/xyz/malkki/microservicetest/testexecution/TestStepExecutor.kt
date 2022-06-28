@@ -7,7 +7,7 @@ import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.full.createInstance
 
-class TestStepExecutor(private val containers: Map<String, GenericContainer<*>>) {
+internal class TestStepExecutor(private val containers: Map<String, GenericContainer<*>>) {
     fun executeSteps(steps: List<TestStep>) {
         val state = ConcurrentHashMap<String, Any>()
 

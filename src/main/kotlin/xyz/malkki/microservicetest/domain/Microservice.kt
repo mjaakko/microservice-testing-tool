@@ -4,7 +4,7 @@ import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import java.time.Duration
 
-data class Microservice(val id: String,
+internal data class Microservice(val id: String,
                         val container: String,
                         val ports: List<Int>,
                         val cmd: String?,

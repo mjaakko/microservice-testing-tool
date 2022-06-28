@@ -6,7 +6,7 @@ import xyz.malkki.microservicetest.domain.Microservice
 import java.io.InputStream
 import java.time.Duration
 
-class MicroserviceConfigParser {
+internal class MicroserviceConfigParser {
     private val yaml = Yaml()
 
     fun getServices(inputStream: InputStream): List<Microservice> {
