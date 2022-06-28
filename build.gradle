@@ -40,6 +40,7 @@ dependencies {
     implementation 'org.testcontainers:junit-jupiter:1.17.2'
 
     testImplementation 'redis.clients:jedis:4.2.3'
+    testImplementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5'
     testImplementation 'org.slf4j:slf4j-simple:1.7.36'
 }
 

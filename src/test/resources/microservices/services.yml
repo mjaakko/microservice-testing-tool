@@ -16,3 +16,10 @@ services:
       - 6650
     dependencies:
       - redis #Just an example
+  - id: mosquitto
+    container: eclipse-mosquitto:1.6.3
+    ports:
+      - 1883
+    waitStrategy:
+      type: LOG
+      logMessage: ".*Opening ipv4 listen socket on port 1883.*"

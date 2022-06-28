@@ -9,3 +9,11 @@ steps:
     timeout: 10
     dependencies:
       - redis
+  - id: start-mqtt
+    class: xyz.malkki.microservicetest.steps.StartMqttStepCode
+    timeout: 15 #Seconds
+    dependencies:
+      - mosquitto
+  - id: stop-mqtt
+    class: xyz.malkki.microservicetest.steps.StopMqttStepCode
+    timeout: 15 #Seconds
