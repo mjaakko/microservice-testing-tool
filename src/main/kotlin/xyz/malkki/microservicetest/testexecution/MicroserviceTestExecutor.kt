@@ -5,13 +5,13 @@ import org.junit.jupiter.api.TestFactory
 import org.junit.platform.engine.discovery.DiscoverySelectors.selectClass
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder
 import org.junit.platform.launcher.core.LauncherFactory
-import org.junit.platform.launcher.listeners.SummaryGeneratingListener
-import java.io.PrintWriter
+import xyz.malkki.microservicetest.utils.BetterSummaryGeneratingListener
+import kotlin.system.exitProcess
 
 class MicroserviceTestExecutor {
     companion object {
-        fun runMicroserviceTests() {
-            val listener = SummaryGeneratingListener()
+        fun runMicroserviceTests(exitAfterDone: Boolean = true) {
+            val listener = BetterSummaryGeneratingListener()
 
             val request = LauncherDiscoveryRequestBuilder.request().selectors(selectClass(MicroserviceTestExecutor::class.java)).build()
             val launcher = LauncherFactory.create()
@@ -19,8 +19,11 @@ class MicroserviceTestExecutor {
             launcher.registerTestExecutionListeners(listener)
             launcher.execute(testPlan)
 
-            listener.summary.printFailuresTo(PrintWriter(System.out))
-            listener.summary.printTo(PrintWriter(System.out))
+            listener.printSummary(System.out)
+
+            if (exitAfterDone) {
+                exitProcess(if (listener.allSuccessful) { 0 } else { 1 })
+            }
         }
     }
 
