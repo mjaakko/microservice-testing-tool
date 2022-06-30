@@ -1,23 +1,26 @@
 package xyz.malkki.microservicetest.domain
 
+import com.github.dockerjava.api.model.Volume
+import org.testcontainers.containers.BindMode
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import java.time.Duration
 
 internal data class Microservice(val id: String,
-                        val container: String,
-                        val ports: List<Int>,
-                        val cmd: String?,
-                        val startupTimeout: Duration?,
-                        val waitStrategy: WaitStrategy?,
-                        val environment: Map<String, Any> = emptyMap(),
-                        val dependencies: List<String> = emptyList()
+                                 val container: String,
+                                 val ports: List<Int>,
+                                 val cmd: String?,
+                                 val startupTimeout: Duration?,
+                                 val waitStrategy: WaitStrategy?,
+                                 val environment: Map<String, Any> = emptyMap(),
+                                 val volumes: List<Volume> = emptyList(),
+                                 val dependencies: List<String> = emptyList()
 ) {
     fun createContainer(): GenericContainer<*> {
-        val container = if (startupTimeout != null) {
-            GenericContainer(container).withStartupTimeout(startupTimeout)
-        } else {
-            GenericContainer(container)
+        var container = GenericContainer(container)
+
+        if (startupTimeout != null) {
+            container = container.withStartupTimeout(startupTimeout)
         }
 
         if (waitStrategy != null) {
@@ -26,6 +29,13 @@ internal data class Microservice(val id: String,
                 WaitStrategy.Type.HEALTHCHECK -> Wait.forHealthcheck()
                 WaitStrategy.Type.LOG -> Wait.forLogMessage(waitStrategy.logMessage!!, 1)
             })
+        }
+
+        volumes.forEach { volume ->
+            container = when (volume.type) {
+                Volume.Type.FILESYSTEM -> container.withFileSystemBind(volume.hostPath, volume.containerPath, BindMode.READ_WRITE)
+                Volume.Type.RESOURCE -> container.withClasspathResourceMapping(volume.hostPath, volume.containerPath, BindMode.READ_ONLY)
+            }
         }
 
         container.networkAliases = listOf(id)
@@ -39,17 +49,13 @@ internal data class Microservice(val id: String,
 
     data class WaitStrategy(val type: Type, val logMessage: String?) {
         enum class Type {
-            PORT, LOG, HEALTHCHECK;
+            PORT, LOG, HEALTHCHECK
+        }
+    }
 
-            companion object {
-                fun valueOfSafe(value: String): Type? {
-                    return try {
-                        Type.valueOf(value)
-                    } catch (iae: IllegalArgumentException) {
-                        null
-                    }
-                }
-            }
+    data class Volume(val type: Type, val hostPath: String, val containerPath: String) {
+        enum class Type {
+            FILESYSTEM, RESOURCE
         }
     }
 }
