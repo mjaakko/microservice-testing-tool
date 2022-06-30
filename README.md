@@ -1,4 +1,4 @@
-# microservice-testing-tool [![Build and publish](https://github.com/mjaakko/microservice-testing-tool/actions/workflows/build-and-publish.yml/badge.svg)](https://github.com/mjaakko/microservice-testing-tool/actions/workflows/build-and-publish.yml)
+# microservice-testing-tool [![Build and publish](https://github.com/mjaakko/microservice-testing-tool/actions/workflows/build-and-publish.yml/badge.svg)](https://github.com/mjaakko/microservice-testing-tool/actions/workflows/build-and-publish.yml) [![Latest version](https://img.shields.io/github/v/tag/mjaakko/microservice-testing-tool)](https://github.com/mjaakko/microservice-testing-tool/tags)
 
 Microservice testing tool (TODO: find a better name) for doing system-level testing with applications using microservice architecture. Created for M.Sc. thesis at University of Helsinki.
 
