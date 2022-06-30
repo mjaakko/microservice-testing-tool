@@ -20,6 +20,10 @@ services:
     container: eclipse-mosquitto:1.6.3
     ports:
       - 1883
+    volumes:
+      - type: RESOURCE
+        hostPath: mosquitto.conf
+        containerPath: /mosquitto/config/mosquitto.conf
     waitStrategy:
       type: LOG
       logMessage: ".*Opening ipv4 listen socket on port 1883.*"
