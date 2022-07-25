@@ -1,10 +1,14 @@
 package xyz.malkki.microservicetest.domain
 
-import com.github.dockerjava.api.model.Volume
+import mu.KotlinLogging
 import org.testcontainers.containers.BindMode
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.wait.strategy.Wait
+import java.nio.file.Files
+import java.nio.file.Paths
 import java.time.Duration
+
+private val log = KotlinLogging.logger {}
 
 internal data class Microservice(val id: String,
                                  val container: String,
@@ -33,7 +37,17 @@ internal data class Microservice(val id: String,
 
         volumes.forEach { volume ->
             container = when (volume.type) {
-                Volume.Type.FILESYSTEM -> container.withFileSystemBind(volume.hostPath, volume.containerPath, BindMode.READ_WRITE)
+                Volume.Type.FILESYSTEM -> {
+                    //Create directories if needed
+                    val path = Paths.get(volume.hostPath)
+                    if (Files.notExists(path)) {
+                        log.info { "Creating directory at $path" }
+
+                        Files.createDirectories(path)
+                    }
+
+                    container.withFileSystemBind(path.toAbsolutePath().toString(), volume.containerPath, BindMode.READ_WRITE)
+                }
                 Volume.Type.RESOURCE -> container.withClasspathResourceMapping(volume.hostPath, volume.containerPath, BindMode.READ_ONLY)
             }
         }
