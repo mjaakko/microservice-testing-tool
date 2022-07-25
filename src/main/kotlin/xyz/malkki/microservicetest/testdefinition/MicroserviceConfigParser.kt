@@ -57,7 +57,8 @@ internal class MicroserviceConfigParser {
             throw InvalidConfigurationException("Unknown volume type: ${volumeConfig["type"]} (allowed values: ${Microservice.Volume.Type.values().joinToString(", ")})")
         }
 
-        return Microservice.Volume(volumeType!!,
+        return Microservice.Volume(
+            volumeType,
             volumeConfig["hostPath"].toString(),
             volumeConfig["containerPath"].toString()
         )
