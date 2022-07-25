@@ -20,6 +20,8 @@ internal class TestStepParser {
 
         val dependencies = step["dependencies"]?.let { it as List<String> }.orEmpty().toSet()
 
-        return TestStep(step["id"]!!.toString(), step["class"]!!.toString(), dependencies, step["timeout"]?.toString()?.toIntOrNull())
+        val parameters = step["parameters"]?.let { it as Map<String, String> } ?: emptyMap()
+
+        return TestStep(step["id"]!!.toString(), step["class"]!!.toString(), dependencies, parameters, step["timeout"]?.toString()?.toIntOrNull())
     }
 }
