@@ -13,3 +13,9 @@ test-suites:
     steps:
       - start-mqtt
       - stop-mqtt
+  - id: postgres
+    name: Test Postgres
+    dependencies:
+      - postgres
+    steps:
+      - create-database-table
