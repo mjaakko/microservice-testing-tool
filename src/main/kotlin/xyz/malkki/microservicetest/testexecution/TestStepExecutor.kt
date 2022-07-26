@@ -20,19 +20,19 @@ internal class TestStepExecutor(private val containers: Map<String, GenericConta
             val clazz = Class.forName(step.className).kotlin
 
             val testStep = clazz.createInstance()
-            if (testStep is TestStepCode) {
+            if (testStep is ParametrizedTestStepCode) {
                 val dependencies = containers.filterKeys { step.dependencies.contains(it) }
 
                 if (step.timeout == null) {
-                    testStep.execute(dependencies, ::updateState, state::get)
+                    testStep.execute(dependencies, step.parameters, ::updateState, state::get)
                 } else {
                     assertTimeout(Duration.ofSeconds(step.timeout.toLong()), "Test step ${step.id} was not executed in ${step.timeout} seconds") {
-                        testStep.execute(dependencies, ::updateState, state::get)
+                        testStep.execute(dependencies, step.parameters, ::updateState, state::get)
                     }
                 }
             } else {
                 //TODO: use different type of exception
-                throw IllegalArgumentException("$clazz does not implement TestStep")
+                throw IllegalArgumentException("$clazz does not implement ParametrizedTestStepCode")
             }
         }
     }
