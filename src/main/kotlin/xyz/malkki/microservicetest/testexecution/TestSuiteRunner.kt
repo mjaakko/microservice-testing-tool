@@ -14,6 +14,8 @@ import xyz.malkki.microservicetest.testdefinition.TestStepParser
 import xyz.malkki.microservicetest.testdefinition.TestSuiteParser
 import xyz.malkki.microservicetest.utils.DependencyGraph
 import xyz.malkki.microservicetest.utils.stopSafely
+import java.io.BufferedInputStream
+import java.io.InputStream
 import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
@@ -22,25 +24,32 @@ import kotlin.streams.toList
 
 private val logger = KotlinLogging.logger { }
 object TestSuiteRunner {
+    private const val MICROSERVICES_CONFIG_DIR = "microservices"
+    private const val STEPS_CONFIG_DIR = "steps"
+    private const val TESTSUITES_CONFIG_DIR = "testsuites"
+
     private val microservices: Map<String, Microservice>
     private val testSteps: Map<String, TestStep>
     private val testSuites: Map<String, TestSuite>
 
     init {
         val microserviceConfigParser = MicroserviceConfigParser()
-        microservices = getFilesFromResourcesDir("microservices").flatMap {
-            Files.newInputStream(it).use { microserviceConfigParser.getServices(it) }
-        }.associateBy { it.id }
+        microservices = readConfig(MICROSERVICES_CONFIG_DIR, microserviceConfigParser::getServices).associateBy { it.id }
 
         val testStepParser = TestStepParser()
-        testSteps = getFilesFromResourcesDir("steps").flatMap {
-            Files.newInputStream(it).use { testStepParser.getTestSteps(it) }
-        }.associateBy { it.id }
+        testSteps = readConfig(STEPS_CONFIG_DIR, testStepParser::getTestSteps).associateBy { it.id }
 
         val testSuiteParser = TestSuiteParser()
-        testSuites = getFilesFromResourcesDir("testsuites").flatMap {
-            Files.newInputStream(it).use { testSuiteParser.getTestSuites(it) }
-        }.associateBy { it.id }
+        testSuites = readConfig(TESTSUITES_CONFIG_DIR, testSuiteParser::getTestSuites).associateBy { it.id }
+    }
+
+    private fun <T> readConfig(resourceDirectoryName: String, configParser: (InputStream) -> List<T>): List<T> {
+        val configFiles = getFilesFromResourcesDir(resourceDirectoryName)
+        logger.info { "${configFiles.size} configuration files found from $resourceDirectoryName/" }
+        return configFiles.flatMap { path ->
+            logger.debug { "Reading configuration from $path" }
+            BufferedInputStream(Files.newInputStream(path)).use { configParser(it) }
+        }
     }
 
     fun getTestSuites(): Collection<String> = testSuites.keys
