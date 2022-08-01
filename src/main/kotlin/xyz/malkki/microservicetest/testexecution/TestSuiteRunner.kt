@@ -68,6 +68,8 @@ object TestSuiteRunner {
 
         val testSuite = testSuites[testSuiteId]!!
 
+        logger.info { "Executing test suite ${testSuite.id} (${testSuite.name})" }
+
         val network = Network.newNetwork()
 
         val containers = mutableMapOf<String, GenericContainer<*>>()
@@ -81,6 +83,8 @@ object TestSuiteRunner {
                 val container = microservices[microservice]!!.createContainer()
                 container.network = network
                 try {
+                    logger.info { "Starting container $microservice (${container.dockerImageName})" }
+
                     container.start()
                 } catch (cle: ContainerLaunchException) {
                     logger.error(cle) {
