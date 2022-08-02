@@ -2,26 +2,18 @@ steps:
   - id: set-redis-value
     class: xyz.malkki.microservicetest.steps.SetRedisValueStepCode
     timeout: 10 #Seconds
-    dependencies:
-      - redis
   - id: get-redis-value
     class: xyz.malkki.microservicetest.steps.GetRedisValueStepCode
     timeout: 10
-    dependencies:
-      - redis
   - id: start-mqtt
     class: xyz.malkki.microservicetest.steps.StartMqttStepCode
     timeout: 15 #Seconds
-    dependencies:
-      - mosquitto
   - id: stop-mqtt
     class: xyz.malkki.microservicetest.steps.StopMqttStepCode
     timeout: 15 #Seconds
   - id: create-database-table
     class: xyz.malkki.microservicetest.teststeps.ExecuteSqlTestStep
     timeout: 30
-    dependencies:
-      - postgres
     parameters:
       connectionString: jdbc:postgresql://postgres:5432/?user=postgres&password=test
       sqlResource: create_db.sql

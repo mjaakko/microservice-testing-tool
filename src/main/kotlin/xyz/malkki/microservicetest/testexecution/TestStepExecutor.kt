@@ -28,15 +28,13 @@ internal class TestStepExecutor(private val containers: Map<String, GenericConta
 
             val testStep = clazz!!.createInstance()
             if (testStep is ParametrizedTestStepCode) {
-                val dependencies = containers.filterKeys { step.dependencies.contains(it) }
-
                 logger.info { "Executing test step ${step.id} with parameters ${step.parameters}" }
 
                 if (step.timeout == null) {
-                    testStep.execute(dependencies, step.parameters, ::updateState, state::get)
+                    testStep.execute(containers, step.parameters, ::updateState, state::get)
                 } else {
                     assertTimeout(Duration.ofSeconds(step.timeout.toLong()), "Test step ${step.id} was not executed in ${step.timeout} seconds") {
-                        testStep.execute(dependencies, step.parameters, ::updateState, state::get)
+                        testStep.execute(containers, step.parameters, ::updateState, state::get)
                     }
                 }
             } else {

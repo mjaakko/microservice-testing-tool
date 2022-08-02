@@ -9,13 +9,13 @@ import org.testcontainers.containers.Network
 import xyz.malkki.microservicetest.domain.Microservice
 import xyz.malkki.microservicetest.domain.TestStep
 import xyz.malkki.microservicetest.domain.TestSuite
+import xyz.malkki.microservicetest.testdefinition.ConfigParser
 import xyz.malkki.microservicetest.testdefinition.MicroserviceConfigParser
 import xyz.malkki.microservicetest.testdefinition.TestStepParser
 import xyz.malkki.microservicetest.testdefinition.TestSuiteParser
 import xyz.malkki.microservicetest.utils.DependencyGraph
 import xyz.malkki.microservicetest.utils.stopSafely
 import java.io.BufferedInputStream
-import java.io.InputStream
 import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
@@ -33,22 +33,19 @@ object TestSuiteRunner {
     private val testSuites: Map<String, TestSuite>
 
     init {
-        val microserviceConfigParser = MicroserviceConfigParser()
-        microservices = readConfig(MICROSERVICES_CONFIG_DIR, microserviceConfigParser::getServices).associateBy { it.id }
+        microservices = readConfig(MICROSERVICES_CONFIG_DIR, MicroserviceConfigParser()).associateBy { it.id }
 
-        val testStepParser = TestStepParser()
-        testSteps = readConfig(STEPS_CONFIG_DIR, testStepParser::getTestSteps).associateBy { it.id }
+        testSteps = readConfig(STEPS_CONFIG_DIR, TestStepParser()).associateBy { it.id }
 
-        val testSuiteParser = TestSuiteParser()
-        testSuites = readConfig(TESTSUITES_CONFIG_DIR, testSuiteParser::getTestSuites).associateBy { it.id }
+        testSuites = readConfig(TESTSUITES_CONFIG_DIR, TestSuiteParser()).associateBy { it.id }
     }
 
-    private fun <T> readConfig(resourceDirectoryName: String, configParser: (InputStream) -> List<T>): List<T> {
+    private fun <T> readConfig(resourceDirectoryName: String, configParser: ConfigParser<List<T>>): List<T> {
         val configFiles = getFilesFromResourcesDir(resourceDirectoryName)
         logger.info { "${configFiles.size} configuration files found from $resourceDirectoryName/" }
         return configFiles.flatMap { path ->
             logger.debug { "Reading configuration from $path" }
-            BufferedInputStream(Files.newInputStream(path)).use { configParser(it) }
+            BufferedInputStream(Files.newInputStream(path)).use { configParser.validateAndParse(it) }
         }
     }
 
