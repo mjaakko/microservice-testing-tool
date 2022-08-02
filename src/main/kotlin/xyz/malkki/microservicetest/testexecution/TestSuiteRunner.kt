@@ -9,10 +9,7 @@ import org.testcontainers.containers.Network
 import xyz.malkki.microservicetest.domain.Microservice
 import xyz.malkki.microservicetest.domain.TestStep
 import xyz.malkki.microservicetest.domain.TestSuite
-import xyz.malkki.microservicetest.testdefinition.ConfigParser
-import xyz.malkki.microservicetest.testdefinition.MicroserviceConfigParser
-import xyz.malkki.microservicetest.testdefinition.TestStepParser
-import xyz.malkki.microservicetest.testdefinition.TestSuiteParser
+import xyz.malkki.microservicetest.testdefinition.*
 import xyz.malkki.microservicetest.utils.DependencyGraph
 import xyz.malkki.microservicetest.utils.stopSafely
 import java.io.BufferedInputStream
@@ -45,7 +42,14 @@ object TestSuiteRunner {
         logger.info { "${configFiles.size} configuration files found from $resourceDirectoryName/" }
         return configFiles.flatMap { path ->
             logger.debug { "Reading configuration from $path" }
-            BufferedInputStream(Files.newInputStream(path)).use { configParser.validateAndParse(it) }
+            BufferedInputStream(Files.newInputStream(path)).use {
+                try {
+                    configParser.validateAndParse(it)
+                } catch (ice: InvalidConfigurationException) {
+                    logger.warn(ice) { "Configuration in $path was invalid, ignoring..." }
+                    emptyList()
+                }
+            }
         }
     }
 
