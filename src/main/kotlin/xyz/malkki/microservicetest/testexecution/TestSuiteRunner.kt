@@ -31,10 +31,13 @@ object TestSuiteRunner {
 
     init {
         microservices = readConfig(MICROSERVICES_CONFIG_DIR, MicroserviceConfigParser()).associateBy { it.id }
+        logger.debug { "Microservices: ${microservices.values}" }
 
         testSteps = readConfig(STEPS_CONFIG_DIR, TestStepParser()).associateBy { it.id }
+        logger.debug { "Test steps: ${testSteps.values}" }
 
         testSuites = readConfig(TESTSUITES_CONFIG_DIR, TestSuiteParser()).associateBy { it.id }
+        logger.debug { "Test suites: ${testSuites.values}" }
     }
 
     private fun <T> readConfig(resourceDirectoryName: String, configParser: ConfigParser<List<T>>): List<T> {
