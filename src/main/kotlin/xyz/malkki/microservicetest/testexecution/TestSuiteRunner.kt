@@ -76,7 +76,11 @@ object TestSuiteRunner {
         val containers = mutableMapOf<String, GenericContainer<*>>()
 
         try {
-            for (microservice in getServicesInStartupOrder(testSuite)) {
+            val microservicesOrdered = getServicesInStartupOrder(testSuite)
+
+            logger.info { "Microservices needed for test suite ${testSuite.id}: ${microservicesOrdered.joinToString(", ")}}" }
+
+            for (microservice in microservicesOrdered) {
                 if (!microservices.containsKey(microservice)) {
                     throw IllegalArgumentException("No microservice found with ID: $microservice")
                 }
