@@ -17,6 +17,7 @@ class DependencyGraphTest {
 
         val sortedList = dependencyGraph.asSortedList()
 
+        assertTrue(sortedList.containsAll(listOf("a", "b", "c", "d", "e")))
         assertTrue(sortedList.indexOf("a") < sortedList.indexOf("b"), "a is before b in the sorted list")
         assertTrue(sortedList.indexOf("b") < sortedList.indexOf("c"), "b is before c in the sorted list")
         assertTrue(sortedList.indexOf("c") > sortedList.indexOf("a"), "c is after a in the sorted list")
