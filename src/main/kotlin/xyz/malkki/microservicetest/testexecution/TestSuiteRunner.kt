@@ -78,7 +78,7 @@ object TestSuiteRunner {
         try {
             val microservicesOrdered = getServicesInStartupOrder(testSuite)
 
-            logger.info { "Microservices needed for test suite ${testSuite.id}: ${microservicesOrdered.joinToString(", ")}}" }
+            logger.info { "Microservices needed for test suite ${testSuite.id}: ${microservicesOrdered.joinToString(", ")}" }
 
             for (microservice in microservicesOrdered) {
                 if (!microservices.containsKey(microservice)) {
