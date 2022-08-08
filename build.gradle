@@ -34,10 +34,10 @@ dependencies {
 
     implementation 'io.github.microutils:kotlin-logging-jvm:2.1.23'
 
-    implementation 'org.junit.jupiter:junit-jupiter:5.8.2'
-    implementation 'org.junit.platform:junit-platform-launcher:1.8.2'
-    implementation 'org.testcontainers:testcontainers:1.17.2'
-    implementation 'org.testcontainers:junit-jupiter:1.17.2'
+    implementation 'org.junit.jupiter:junit-jupiter:5.9.0'
+    implementation 'org.junit.platform:junit-platform-launcher:1.9.0'
+    implementation 'org.testcontainers:testcontainers:1.17.3'
+    implementation 'org.testcontainers:junit-jupiter:1.17.3'
 
     testImplementation 'redis.clients:jedis:4.2.3'
     testImplementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5'
