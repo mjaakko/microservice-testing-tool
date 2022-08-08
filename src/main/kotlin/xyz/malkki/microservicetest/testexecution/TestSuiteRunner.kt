@@ -76,6 +76,11 @@ object TestSuiteRunner {
 
         val network = Network.newNetwork()
 
+        //Verify that test suite configuration includes all services
+        testSuite.services.flatMap { microservices[it]?.dependencies ?: emptyList() }.distinct().forEach { dependency ->
+            assertTrue(dependency in testSuite.services, "$dependency was not included in services of test suite $testSuites")
+        }
+
         val containers = mutableMapOf<String, GenericContainer<*>>()
 
         try {
