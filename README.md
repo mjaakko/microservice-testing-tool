@@ -36,4 +36,56 @@ MicroserviceTestExecutor.runMicroserviceTests()
 
 ### Writing test configuration
 
-TODO
+For complete example, see [transitdata-tests](https://github.com/HSLdevcom/transitdata-tests) repository.
+
+1. Create `.yml` file to `microservices/` resource directory which lists available services
+  * Only `id` and `container` fields are required in the configuration
+```yaml
+services:
+  - id: mosquitto
+    container: eclipse-mosquitto:1.6.3 #Docker image
+    ports: #List of open ports
+      - 1883
+    volumes: #List of volumes used
+      - type: RESOURCE #Either RESOURCE or FILESYSTEM
+        hostPath: mosquitto.conf #Refers to either a resource or a file in the filesystem depending on the value of type
+        containerPath: /mosquitto/config/mosquitto.conf #Path where the volume will be mounted on the container
+    waitStrategy:
+      type: LOG #Either LOG, PORT or HEALTHCHECK
+      logMessage: ".*Opening ipv4 listen socket on port 1883.*" #Log message to wait for if LOG wait strategy is used
+  - id: postgres
+    container: postgres:14-alpine
+    ports:
+      - 5432
+    environment: #Environment variables in the container
+      POSTGRES_PASSWORD: test
+```
+
+2. Create `.yml` file to `steps/` resource directory which lists available test steps
+  * `id` and `class` are required fields. It is also highly recommended to specify timeout with `timeout` to avoid tests getting stuck infinitely
+```yaml
+  - id: start-mqtt
+    class: xyz.malkki.microservicetest.steps.StartMqttStepCode
+    timeout: 15 #Timeout in seconds
+  - id: stop-mqtt
+    class: xyz.malkki.microservicetest.steps.StopMqttStepCode #Full class name. The class must implement xyz.malkki.microservicetest.testexecution.TestStepCode
+    timeout: 15
+  - id: create-database-table
+    class: xyz.malkki.microservicetest.teststeps.ExecuteSqlTestStep
+    timeout: 30
+    parameters: #Parameters for the test if using ParametrizedTestStepCode
+      connectionString: jdbc:postgresql://postgres:5432/?user=postgres&password=test
+      sqlResource: create_db.sql
+```
+3. Write code for test steps. Test steps must implement `xyz.malkki.microservicetest.testexecution.TestStepCode` interface
+4. Create `.yml` file to `testsuites/` resource directory which lists available tests
+```yaml
+test-suites:
+  - id: mosquitto
+    name: Test Mosquitto
+    dependencies: #List IDs of the services that are needed for the test
+      - mosquitto
+    steps: #Steps that the test uses. Steps are executed in the order that they are listed
+      - start-mqtt
+      - stop-mqtt
+```
