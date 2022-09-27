@@ -18,8 +18,12 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.streams.toList
+import kotlin.time.DurationUnit
+import kotlin.time.ExperimentalTime
+import kotlin.time.measureTime
 
 private val logger = KotlinLogging.logger { }
+@ExperimentalTime
 object TestSuiteRunner {
     private const val MICROSERVICES_CONFIG_DIR = "microservices"
     private const val STEPS_CONFIG_DIR = "steps"
@@ -30,14 +34,17 @@ object TestSuiteRunner {
     private val testSuites: Map<String, TestSuite>
 
     init {
-        microservices = readConfig(MICROSERVICES_CONFIG_DIR, MicroserviceConfigParser()).associateBy { it.id }
-        logger.debug { "Microservices: ${microservices.values}" }
+        val duration = measureTime {
+            microservices = readConfig(MICROSERVICES_CONFIG_DIR, MicroserviceConfigParser()).associateBy { it.id }
+            logger.debug { "Microservices: ${microservices.values}" }
 
-        testSteps = readConfig(STEPS_CONFIG_DIR, TestStepParser()).associateBy { it.id }
-        logger.debug { "Test steps: ${testSteps.values}" }
+            testSteps = readConfig(STEPS_CONFIG_DIR, TestStepParser()).associateBy { it.id }
+            logger.debug { "Test steps: ${testSteps.values}" }
 
-        testSuites = readConfig(TESTSUITES_CONFIG_DIR, TestSuiteParser()).associateBy { it.id }
-        logger.debug { "Test suites: ${testSuites.values}" }
+            testSuites = readConfig(TESTSUITES_CONFIG_DIR, TestSuiteParser()).associateBy { it.id }
+            logger.debug { "Test suites: ${testSuites.values}" }
+        }
+        logger.info { "Configurations read in ${duration.toString(DurationUnit.MILLISECONDS)}" }
     }
 
     private fun <T> readConfig(resourceDirectoryName: String, configParser: ConfigParser<List<T>>): List<T> {
@@ -74,7 +81,9 @@ object TestSuiteRunner {
 
         logger.info { "Executing test suite ${testSuite.id} (${testSuite.name})" }
 
+        logger.debug { "Creating network" }
         val network = Network.newNetwork()
+        logger.debug { "Network created: ${network.id}" }
 
         //Verify that test suite configuration includes all services
         testSuite.services.flatMap { microservices[it]?.dependencies ?: emptyList() }.distinct().forEach { dependency ->
@@ -88,30 +97,36 @@ object TestSuiteRunner {
 
             logger.info { "Microservices needed for test suite ${testSuite.id}: ${microservicesOrdered.joinToString(", ")}" }
 
-            for (microservice in microservicesOrdered) {
-                if (!microservices.containsKey(microservice)) {
-                    throw IllegalArgumentException("No microservice found with ID: $microservice")
-                }
-
-                val container = microservices[microservice]!!.createContainer()
-                container.network = network
-                try {
-                    logger.info { "Starting container $microservice (${container.dockerImageName})" }
-
-                    container.start()
-                } catch (cle: ContainerLaunchException) {
-                    logger.error(cle) {
-                        "Failed to start container $microservice (${container.dockerImageName}), latest logs from container:\n${container.logs}"
+            val microserviceStartupDuration = measureTime {
+                for (microservice in microservicesOrdered) {
+                    if (!microservices.containsKey(microservice)) {
+                        throw IllegalArgumentException("No microservice found with ID: $microservice")
                     }
-                    throw cle
+
+                    val container = microservices[microservice]!!.createContainer()
+                    container.network = network
+                    try {
+                        logger.info { "Starting container $microservice (${container.dockerImageName})" }
+
+                        container.start()
+                    } catch (cle: ContainerLaunchException) {
+                        logger.error(cle) {
+                            "Failed to start container $microservice (${container.dockerImageName}), latest logs from container:\n${container.logs}"
+                        }
+                        throw cle
+                    }
+                    containers[microservice] = container
                 }
-                containers[microservice] = container
             }
+            logger.info { "Microservices started in ${microserviceStartupDuration.toString(DurationUnit.SECONDS, 2)}" }
 
             val steps = testSuite.steps.map { if (testSteps.containsKey(it)) { testSteps[it]!! } else { throw IllegalArgumentException("No test step found with ID: $it") } }
 
-            val testStepExecutor = TestStepExecutor(containers)
-            testStepExecutor.executeSteps(steps)
+            val testStepExecutionDuration = measureTime {
+                val testStepExecutor = TestStepExecutor(containers)
+                testStepExecutor.executeSteps(steps)
+            }
+            logger.info { "Test steps executed in ${testStepExecutionDuration.toString(DurationUnit.SECONDS, 2)}" }
         } catch (e: Exception) {
             logger.error { "Failed to execute test suite ${testSuite.id}: ${e.message}" }
             throw e
