@@ -7,7 +7,9 @@ import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder
 import org.junit.platform.launcher.core.LauncherFactory
 import xyz.malkki.microservicetest.utils.BetterSummaryGeneratingListener
 import kotlin.system.exitProcess
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 class MicroserviceTestExecutor {
     companion object {
         fun runMicroserviceTests(exitAfterDone: Boolean = true) {

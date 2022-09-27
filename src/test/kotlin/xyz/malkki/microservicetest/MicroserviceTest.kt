@@ -1,9 +1,11 @@
 package xyz.malkki.microservicetest
 
-import xyz.malkki.microservicetest.testexecution.TestSuiteRunner
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
+import xyz.malkki.microservicetest.testexecution.TestSuiteRunner
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 class MicroserviceTest {
     @TestFactory
     fun `Test microservices`(): Collection<DynamicTest> {
