@@ -1,10 +1,10 @@
 # microservice-testing-tool [![Build and publish](https://github.com/mjaakko/microservice-testing-tool/actions/workflows/build-and-publish.yml/badge.svg)](https://github.com/mjaakko/microservice-testing-tool/actions/workflows/build-and-publish.yml) [![Latest version](https://img.shields.io/github/v/tag/mjaakko/microservice-testing-tool)](https://github.com/mjaakko/microservice-testing-tool/tags)
 
-Microservice testing tool (TODO: find a better name) for doing system-level testing with applications using microservice architecture. Created for M.Sc. thesis at University of Helsinki.
+Microservice testing tool for doing system-level testing with applications using microservice architecture. Created for M.Sc. thesis at University of Helsinki.
 
 ## Requirements
 
-The tool uses Testcontainers library to run the containers containing the microservices. Testcontainers uses Docker as its container engine, which means that Docker must be available on the environment that runs the tests.
+The tool uses *Testcontainers* library to run the containers containing the microservices. Testcontainers uses *Docker* as its container engine, which means that Docker must be available on the environment that runs the tests.
 
 ## Usage
 
@@ -60,7 +60,6 @@ services:
     environment: #Environment variables in the container
       POSTGRES_PASSWORD: test
 ```
-
 2. Create `.yml` file to `steps/` resource directory which lists available test steps
   * `id` and `class` are required fields. It is also highly recommended to specify timeout with `timeout` to avoid tests getting stuck infinitely
 ```yaml
@@ -89,3 +88,18 @@ test-suites:
       - start-mqtt
       - stop-mqtt
 ```
+
+#### Parametrized test steps
+
+Parametrized test steps help reusing code for commong operations such as executing SQL files. Parametrized test steps can be created by implementing `xyz.malkki.microservicetest.testexecution.ParametrizedTestStepCode` interface. Parameters can be set in the test step YAML-file with the `parameters` object.
+
+There are currently two parametrized test steps included with the tool: 
+* `xyz.malkki.microservicetest.teststeps.ExecuteSqlTestStep`
+  * Executes SQL code from resource
+  * Parameters:
+    * `connectionString`: connection string to the database. Hostname and port are automatically changed to use the hostname and the port of the container.
+    * `sqlResource`: name of the resource, which contains the SQL code
+* `xyz.malkki.microservicetest.teststeps.WaitTestStep`
+  * Waits the specified amount of time
+  * Parameters:
+    * `millis`: Amount of milliseconds to wait
