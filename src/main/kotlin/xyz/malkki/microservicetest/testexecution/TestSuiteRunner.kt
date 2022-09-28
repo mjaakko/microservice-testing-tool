@@ -93,6 +93,8 @@ object TestSuiteRunner {
         val containers = mutableMapOf<String, GenericContainer<*>>()
 
         try {
+            val steps = testSuite.steps.map { if (testSteps.containsKey(it)) { testSteps[it]!! } else { throw IllegalArgumentException("No test step found with ID: $it") } }
+            
             val microservicesOrdered = getServicesInStartupOrder(testSuite)
 
             logger.info { "Microservices needed for test suite ${testSuite.id}: ${microservicesOrdered.joinToString(", ")}" }
@@ -119,8 +121,6 @@ object TestSuiteRunner {
                 }
             }
             logger.info { "Microservices started in ${microserviceStartupDuration.toString(DurationUnit.SECONDS, 2)}" }
-
-            val steps = testSuite.steps.map { if (testSteps.containsKey(it)) { testSteps[it]!! } else { throw IllegalArgumentException("No test step found with ID: $it") } }
 
             val testStepExecutionDuration = measureTime {
                 val testStepExecutor = TestStepExecutor(containers)
