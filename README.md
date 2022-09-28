@@ -14,7 +14,7 @@ In both cases, the tool must be included as a dependency in the project which co
 
 ### As a library
 
-1. Include the package as a test dependency, for example with Gradle: `testImplementation 'xyz.malkki:microservice-testing-tool:0.2.1'`
+1. Include the package as a test dependency, for example with Gradle: `testImplementation 'xyz.malkki:microservice-testing-tool:1.0.0'`
 2. Create a test class that includes the following function (example in Kotlin):
 ```kotlin
 @TestFactory
@@ -26,7 +26,7 @@ fun `Test microservices`(): Collection<DynamicTest> {
 
 ### Standalone
 
-1. Include the package as a dependency, for example with Gradle:  `implementation 'xyz.malkki:microservice-testing-tool:0.2.1'`
+1. Include the package as a dependency, for example with Gradle:  `implementation 'xyz.malkki:microservice-testing-tool:1.0.0'`
 2. Create a main function that includes the following:
 ```kotlin
 MicroserviceTestExecutor.runMicroserviceTests()
