@@ -59,6 +59,16 @@ services:
       - 5432
     environment: #Environment variables in the container
       POSTGRES_PASSWORD: test
+  - id: pulsar
+    container: apachepulsar/pulsar
+    startupTimeout: 90 #Timeout in seconds to wait for the service to start
+    waitStrategy:
+      type: PORT #Waits until first of the ports accepts connections
+    cmd: bin/pulsar standalone #Command that is run in the container
+    ports:
+      - 6650
+-   dependencies: #List of services that must be started before this service
+      - redis
 ```
 2. Create `.yml` file to `steps/` resource directory which lists available test steps
   * `id` and `class` are required fields. It is also highly recommended to specify timeout with `timeout` to avoid tests getting stuck infinitely
