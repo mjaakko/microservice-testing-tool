@@ -5,7 +5,7 @@ import xyz.malkki.microservicetest.domain.TestStep
 @Suppress("UNCHECKED_CAST")
 internal class TestStepParser : ConfigParser<List<TestStep>>() {
     private fun parseStep(step: Map<String, Any>): TestStep {
-        val parameters = step["parameters"]?.let { it as Map<String, String> } ?: emptyMap()
+        val parameters = step["parameters"]?.let { it as Map<String, Any> } ?: emptyMap()
 
         return TestStep(step["id"]!!.toString(), step["class"]!!.toString(), parameters, step["timeout"]?.toString()?.toIntOrNull())
     }
