@@ -9,11 +9,11 @@ private val log = KotlinLogging.logger {}
 class WaitTestStep : ParametrizedTestStepCode {
     override fun execute(
         containers: Map<String, GenericContainer<*>>,
-        parameters: Map<String, String>,
+        parameters: Map<String, Any>,
         updateState: (key: String, updater: (Any?) -> Any) -> Unit,
         getState: (key: String) -> Any?
     ) {
-        val millis = parameters["millis"]?.toLongOrNull()
+        val millis = parameters["millis"]?.let { if (it is Number) { it.toLong() } else { it.toString().toLongOrNull() } }
 
         if (millis == null) {
             log.warn { "Invalid value for 'millis'" }
