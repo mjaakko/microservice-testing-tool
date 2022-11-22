@@ -13,11 +13,11 @@ private val HOST_AND_PORT_REGEX = Regex("\\w+:\\d+")
 class ExecuteSqlTestStep : ParametrizedTestStepCode {
     override fun execute(
         containers: Map<String, GenericContainer<*>>,
-        parameters: Map<String, String>,
+        parameters: Map<String, Any>,
         updateState: (key: String, updater: (Any?) -> Any) -> Unit,
         getState: (key: String) -> Any?
     ) {
-        val connectionString = parameters["connectionString"]!!
+        val connectionString = parameters["connectionString"]!!.toString()
 
         val hostAndPort = HOST_AND_PORT_REGEX.find(connectionString)?.value?.split(':', limit = 2)
 
@@ -41,7 +41,7 @@ class ExecuteSqlTestStep : ParametrizedTestStepCode {
 
         log.info { "Using connection string: $connectionStringModified" }
 
-        val sqlResource = parameters["sqlResource"]
+        val sqlResource = parameters["sqlResource"].toString()
         val sql = ExecuteSqlTestStep::class.java.classLoader.getResourceAsStream(sqlResource).use { it.readAllBytes().toString(StandardCharsets.UTF_8) }
 
         DriverManager.getConnection(connectionStringModified).use { connection ->

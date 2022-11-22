@@ -13,7 +13,7 @@ interface ParametrizedTestStepCode {
     @Throws(Exception::class)
     fun execute(
         containers: Map<String, GenericContainer<*>>,
-        parameters: Map<String, String>,
+        parameters: Map<String, Any>,
         updateState: (key: String, updater: (Any?) -> Any) -> Unit,
         getState: (key: String) -> Any?
     )
